@@ -4,9 +4,10 @@ import com.example.URL_Shortner.dto.ShortenUrlRequest;
 import com.example.URL_Shortner.dto.ShortenUrlResponse;
 import com.example.URL_Shortner.entity.UrlMapping;
 import com.example.URL_Shortner.repository.UrlMappingRepository;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.UUID;
 
 // Simple service layer for the initial version of the shortener flow.
 @Service
@@ -36,6 +37,13 @@ public class UrlShortenerService {
         urlMappingRepository.save(mapping);
 
         return new ShortenUrlResponse(shortCode);
+    }
+
+    // Resolve the original URL from the database using the short code.
+    @Transactional(readOnly = true)
+    public Optional<String> resolveOriginalUrl(String shortCode) {
+        return urlMappingRepository.findByShortCode(shortCode)
+                .map(UrlMapping::getOriginalUrl);
     }
 
     private String generateTemporaryShortCode() {

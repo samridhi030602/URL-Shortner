@@ -3,7 +3,11 @@ package com.example.URL_Shortner.controller;
 import com.example.URL_Shortner.dto.ShortenUrlRequest;
 import com.example.URL_Shortner.dto.ShortenUrlResponse;
 import com.example.URL_Shortner.service.UrlShortenerService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -24,5 +28,15 @@ public class UrlShortenerController {
     @ResponseStatus(HttpStatus.CREATED)
     public ShortenUrlResponse shortenUrl(@RequestBody ShortenUrlRequest request) {
         return urlShortenerService.createShortUrl(request);
+    }
+
+    // Redirect a short code to its original URL using a permanent redirect.
+    @GetMapping("/{code}")
+    public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String code) {
+        return urlShortenerService.resolveOriginalUrl(code)
+                .map(targetUrl -> ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+                        .header(HttpHeaders.LOCATION, targetUrl)
+                        .<Void>build())
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
