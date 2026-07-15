@@ -1,0 +1,44 @@
+package com.example.URL_Shortner.controller;
+
+import com.example.URL_Shortner.dto.ShortenUrlRequest;
+import com.example.URL_Shortner.dto.ShortenUrlResponse;
+import com.example.URL_Shortner.service.UrlShortenerService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+// Basic REST controller for the initial URL shortening flow.
+@RestController
+public class UrlShortenerController {
+
+    private final UrlShortenerService urlShortenerService;
+
+    public UrlShortenerController(UrlShortenerService urlShortenerService) {
+        this.urlShortenerService = urlShortenerService;
+    }
+
+    // Initial version of the endpoint; this will be improved later.
+    @PostMapping("/shorten")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ShortenUrlResponse shortenUrl(@Valid @RequestBody ShortenUrlRequest request) {
+        return urlShortenerService.createShortUrl(request);
+    }
+
+    // Redirect a short code to its original URL using a permanent redirect.
+    // The pattern allows common URL-safe characters so custom aliases such as my-link work correctly.
+    @GetMapping("/{code:[A-Za-z0-9_-]+}")
+    public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String code) {
+        return urlShortenerService.resolveOriginalUrl(code)
+                .map(targetUrl -> ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
+                        .header(HttpHeaders.LOCATION, targetUrl)
+                        .<Void>build())
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+}
