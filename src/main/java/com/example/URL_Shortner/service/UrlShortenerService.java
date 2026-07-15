@@ -21,12 +21,13 @@ public class UrlShortenerService {
         this.urlMappingRepository = urlMappingRepository;
     }
 
-    // Create a mapping and return the short code. This uses the persisted database ID
-    // so the encoding is deterministic and avoids collisions once the entity is saved.
+    // Create a mapping and return the short code. Base62 is chosen because it creates compact,
+    // URL-safe codes without relying on random strings or collisions after persistence.
     @Transactional
     public ShortenUrlResponse createShortUrl(ShortenUrlRequest request) {
         String originalUrl = validateOriginalUrl(request.getOriginalUrl());
 
+        // Duplicate URL handling: if the same destination is submitted again, return the existing code.
         Optional<UrlMapping> existingMapping = urlMappingRepository.findByOriginalUrl(originalUrl);
         if (existingMapping.isPresent()) {
             return new ShortenUrlResponse(existingMapping.get().getShortCode());
@@ -56,6 +57,8 @@ public class UrlShortenerService {
                 .map(UrlMapping::getOriginalUrl);
     }
 
+    // Custom aliases are validated to stay unique and predictable. A duplicate alias is rejected
+    // rather than silently overwriting an existing mapping.
     private String resolveShortCode(String customAlias) {
         if (customAlias == null || customAlias.isBlank()) {
             return null;
@@ -75,7 +78,11 @@ public class UrlShortenerService {
         }
 
         try {
-            URI.create(originalUrl).toURL();
+            URI uri = URI.create(originalUrl);
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                throw new IllegalArgumentException("Invalid URL");
+            }
+            uri.toURL();
         } catch (Exception ex) {
             throw new IllegalArgumentException("Invalid URL: " + originalUrl, ex);
         }

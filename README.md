@@ -1,29 +1,29 @@
 # URL Shortener
 
 ## Overview
-This project is a simple URL shortening service built with Spring Boot, Spring Data JPA, and H2. It currently supports creating short links, storing them in a database, and redirecting users to the original URL.
+A simple Spring Boot URL shortener that stores mappings in H2 and redirects short codes to their original URLs.
 
 ## Tech Stack
 - Spring Boot
+- Spring Web
 - Spring Data JPA
 - H2 Database
-- Spring Web
+- Spring Validation
 
-## Current Features
-- Create a short URL via POST /shorten
-- Redirect to the original URL via GET /{code}
-- Persist URL mappings in the H2 database
-- Validate incoming URLs
-- Reuse the existing short code for the same original URL
-- Reject duplicate custom aliases
-- Generate short codes using Base62 encoding derived from the database ID
+## Setup
+1. Clone the project.
+2. Run the app with:
+   ```bash
+   ./gradlew bootRun
+   ```
+3. The app uses a file-based H2 database at `./data/urlshortner`.
+4. Open the H2 console at `http://localhost:8080/h2-console`.
 
 ## API Endpoints
-
 ### POST /shorten
-Creates a new short URL mapping.
+Creates a short URL mapping.
 
-Request body:
+Request:
 ```json
 {
   "originalUrl": "https://example.com",
@@ -38,32 +38,14 @@ Response:
 }
 ```
 
-If no custom alias is provided, the service generates a short code automatically.
-
 ### GET /{code}
-Redirects to the original URL for the provided short code.
+Redirects to the original URL for the given short code.
 
-Example:
-```bash
-GET /abc123
-```
+## Design Decisions
+- Base62 is used for compact, URL-safe short codes.
+- Duplicate URLs return the existing short code instead of creating a new mapping.
+- Custom aliases are rejected if they already exist.
+- Invalid or empty URLs return HTTP 400.
 
-If the code does not exist, the API returns HTTP 404.
-
-## Project Structure
-- Controller: handles HTTP requests and responses
-- Service: contains the business logic
-- Repository: interacts with the database through JPA
-- Entity: stores the URL mapping data
-
-## Data Model
-Each URL mapping stores:
-- originalUrl
-- shortCode
-- createdAt
-- id (auto-generated primary key)
-
-## Notes
-- This is an initial version of the service.
-- Duplicate handling and alias behavior are intentionally simple and readable.
-- The short code generation is based on Base62 encoding of the persisted database ID.
+## AI Usage
+AI was used to scaffold the Spring Boot structure, implement the CRUD-style flow, and add validation and tests. Manual decisions were made around the simple domain model, the Base62 approach, and the handling of duplicate URLs and custom aliases.

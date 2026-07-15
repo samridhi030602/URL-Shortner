@@ -3,6 +3,7 @@ package com.example.URL_Shortner.controller;
 import com.example.URL_Shortner.dto.ShortenUrlRequest;
 import com.example.URL_Shortner.dto.ShortenUrlResponse;
 import com.example.URL_Shortner.service.UrlShortenerService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class UrlShortenerController {
     // Initial version of the endpoint; this will be improved later.
     @PostMapping("/shorten")
     @ResponseStatus(HttpStatus.CREATED)
-    public ShortenUrlResponse shortenUrl(@RequestBody ShortenUrlRequest request) {
+    public ShortenUrlResponse shortenUrl(@Valid @RequestBody ShortenUrlRequest request) {
         return urlShortenerService.createShortUrl(request);
     }
 
