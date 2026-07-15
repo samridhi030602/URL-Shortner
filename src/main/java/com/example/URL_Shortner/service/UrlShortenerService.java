@@ -6,6 +6,7 @@ import com.example.URL_Shortner.entity.UrlMapping;
 import com.example.URL_Shortner.repository.UrlMappingRepository;
 import java.net.URI;
 import java.util.Optional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +40,18 @@ public class UrlShortenerService {
         mapping.setOriginalUrl(originalUrl);
         mapping.setShortCode(shortCode != null ? shortCode : "");
 
-        UrlMapping savedMapping = urlMappingRepository.save(mapping);
+        UrlMapping savedMapping;
+        try {
+            savedMapping = urlMappingRepository.save(mapping);
+        } catch (DataIntegrityViolationException e) {
+            // Race condition: another thread inserted the same URL between our check and insert.
+            // Fetch the winning mapping and return its short code.
+            Optional<UrlMapping> raceConditionMapping = urlMappingRepository.findByOriginalUrl(originalUrl);
+            if (raceConditionMapping.isPresent()) {
+                return new ShortenUrlResponse(raceConditionMapping.get().getShortCode());
+            }
+            throw new IllegalArgumentException("Unexpected race condition: URL was inserted but not found", e);
+        }
 
         String finalShortCode = shortCode != null
                 ? shortCode

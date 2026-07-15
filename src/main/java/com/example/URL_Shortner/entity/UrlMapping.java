@@ -20,7 +20,7 @@ public class UrlMapping {
     private Long id;
 
     // Required field for the original destination URL.
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String originalUrl;
 
     // Unique short code used to look up the mapping.
