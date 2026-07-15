@@ -12,6 +12,7 @@ public class ShortenUrlRequest {
     private String originalUrl;
 
     @Size(max = 50, message = "customAlias must be at most 50 characters")
+    @Pattern(regexp = "^[A-Za-z0-9_-]+$", message = "customAlias may contain only letters, numbers, hyphens, or underscores and must have at least one character")
     private String customAlias;
 
     public String getOriginalUrl() {

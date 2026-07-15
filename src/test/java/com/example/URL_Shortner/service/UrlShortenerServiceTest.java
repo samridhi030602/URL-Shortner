@@ -77,4 +77,40 @@ class UrlShortenerServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> urlShortenerService.createShortUrl(request));
     }
+
+    @Test
+    void shouldCreateShortUrlWithHyphenatedCustomAlias() {
+        request.setCustomAlias("YT-search");
+
+        UrlMapping savedMapping = new UrlMapping();
+        savedMapping.setId(16L);
+        savedMapping.setOriginalUrl("https://example.com");
+        savedMapping.setShortCode("YT-search");
+
+        when(urlMappingRepository.findByOriginalUrl("https://example.com")).thenReturn(Optional.empty());
+        when(urlMappingRepository.existsByShortCode("YT-search")).thenReturn(false);
+        when(urlMappingRepository.save(org.mockito.ArgumentMatchers.any(UrlMapping.class))).thenReturn(savedMapping);
+
+        ShortenUrlResponse response = urlShortenerService.createShortUrl(request);
+
+        assertEquals("YT-search", response.getShortCode());
+    }
+
+    @Test
+    void shouldCreateShortUrlWithUnderscoreCustomAlias() {
+        request.setCustomAlias("my_short_link");
+
+        UrlMapping savedMapping = new UrlMapping();
+        savedMapping.setId(17L);
+        savedMapping.setOriginalUrl("https://example.com");
+        savedMapping.setShortCode("my_short_link");
+
+        when(urlMappingRepository.findByOriginalUrl("https://example.com")).thenReturn(Optional.empty());
+        when(urlMappingRepository.existsByShortCode("my_short_link")).thenReturn(false);
+        when(urlMappingRepository.save(org.mockito.ArgumentMatchers.any(UrlMapping.class))).thenReturn(savedMapping);
+
+        ShortenUrlResponse response = urlShortenerService.createShortUrl(request);
+
+        assertEquals("my_short_link", response.getShortCode());
+    }
 }

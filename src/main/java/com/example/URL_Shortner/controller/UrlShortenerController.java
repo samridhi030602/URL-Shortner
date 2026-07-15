@@ -32,7 +32,8 @@ public class UrlShortenerController {
     }
 
     // Redirect a short code to its original URL using a permanent redirect.
-    @GetMapping("/{code}")
+    // The pattern allows common URL-safe characters so custom aliases such as my-link work correctly.
+    @GetMapping("/{code:[A-Za-z0-9_-]+}")
     public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String code) {
         return urlShortenerService.resolveOriginalUrl(code)
                 .map(targetUrl -> ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)

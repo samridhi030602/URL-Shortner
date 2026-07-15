@@ -38,8 +38,15 @@ Response:
 }
 ```
 
+Use the exact value returned in `shortCode` for the redirect request.
+
 ### GET /{code}
 Redirects to the original URL for the given short code.
+
+Example:
+```bash
+GET /my-link
+```
 
 ## Design Decisions
 - Base62 is used for compact, URL-safe short codes.
